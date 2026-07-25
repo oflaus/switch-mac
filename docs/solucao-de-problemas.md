@@ -90,6 +90,18 @@ Nessa altura o Mac nem viu o aparelho no barramento USB.
    nenhum ajuste no app resolve. Se aparecer sem a marcação "interface MTP", é o caso da
    seção anterior.
 
+## A pasta parece incompleta ou vazia
+
+Antes de tudo, olhe o **campo de busca** no canto superior direito. Se houver texto ali, a
+lista está filtrada e tudo que não casa fica escondido — inclusive as pastas.
+
+A barra de status embaixo avisa quando isso acontece: em vez de "36 itens" ela mostra
+**"2 de 36 itens · filtrando “payload” — limpar"**, e o texto em azul é um botão que
+remove o filtro. O ⓧ do campo de busca faz o mesmo.
+
+O filtro também se limpa sozinho ao entrar em outra pasta, voltar, avançar ou trocar de
+armazenamento, justamente para não fazer a pasta seguinte parecer vazia.
+
 ## A transferência trava ou fica muito lenta
 
 - Cabos e portas USB 2.0 limitam a cerca de 30–35 MB/s. É o teto do barramento, não do app.

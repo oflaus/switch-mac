@@ -286,6 +286,7 @@ final class AppModel: ObservableObject {
         pushHistory()
         selectedStorage = id
         path = []
+        searchText = ""
         Task { await loadCurrentFolder() }
     }
 
@@ -294,6 +295,8 @@ final class AppModel: ObservableObject {
             pushHistory()
             path.append(object)
             selection = []
+            // Um filtro que sobrevive à navegação faz a pasta nova parecer vazia.
+            searchText = ""
             Task { await loadCurrentFolder() }
         } else {
             openLocally(object)
@@ -305,6 +308,7 @@ final class AppModel: ObservableObject {
         pushHistory()
         path = Array(path.prefix(index))
         selection = []
+        searchText = ""
         Task { await loadCurrentFolder() }
     }
 
@@ -319,6 +323,7 @@ final class AppModel: ObservableObject {
         selectedStorage = previous.0
         path = previous.1
         selection = []
+        searchText = ""
         Task { await loadCurrentFolder() }
     }
 
@@ -328,6 +333,7 @@ final class AppModel: ObservableObject {
         selectedStorage = next.0
         path = next.1
         selection = []
+        searchText = ""
         Task { await loadCurrentFolder() }
     }
 
@@ -380,6 +386,11 @@ final class AppModel: ObservableObject {
     private func appendBatch(_ batch: [MTPObject], generation: Int) {
         guard generation == listGeneration else { return }
         items.append(contentsOf: batch)
+    }
+
+    /// Verdadeiro quando o filtro está ocultando itens da pasta atual.
+    var isFiltering: Bool {
+        !searchText.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     var visibleItems: [MTPObject] {

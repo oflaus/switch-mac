@@ -153,6 +153,15 @@ struct BrowserView: View {
                 Text("Arraste arquivos do Finder para cá para enviá-los ao aparelho.")
                     .font(.callout)
                     .foregroundStyle(.tertiary)
+            } else {
+                Text("Nenhum item desta pasta contém “\(model.searchText)”. "
+                   + "A pasta tem \(model.items.count) itens no total.")
+                    .font(.callout)
+                    .foregroundStyle(.tertiary)
+                    .multilineTextAlignment(.center)
+                Button("Limpar filtro") { model.searchText = "" }
+                    .buttonStyle(.borderedProminent)
+                    .padding(.top, 4)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -167,6 +176,22 @@ struct BrowserView: View {
             Text(statusText)
                 .font(.caption)
                 .foregroundStyle(.secondary)
+
+            if model.isFiltering {
+                Button {
+                    model.searchText = ""
+                } label: {
+                    HStack(spacing: 3) {
+                        Image(systemName: "line.3.horizontal.decrease.circle.fill")
+                        Text("filtrando “\(model.searchText)” — limpar")
+                    }
+                    .font(.caption)
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Color.accentColor)
+                .help("Remover o filtro e mostrar a pasta inteira")
+            }
+
             Spacer()
             if let storage = model.storages.first(where: { $0.id == model.selectedStorage }),
                storage.capacity > 0 {
@@ -181,9 +206,14 @@ struct BrowserView: View {
     }
 
     private var statusText: String {
-        let total = model.visibleItems.count
+        let shown = model.visibleItems.count
         let selected = model.selection.count
-        var parts = ["\(total) \(total == 1 ? "item" : "itens")"]
+        var parts: [String] = []
+        if model.isFiltering {
+            parts.append("\(shown) de \(model.items.count) itens")
+        } else {
+            parts.append("\(shown) \(shown == 1 ? "item" : "itens")")
+        }
         if selected > 0 { parts.append("\(selected) selecionado\(selected == 1 ? "" : "s")") }
         return parts.joined(separator: " · ")
     }
