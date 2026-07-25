@@ -57,7 +57,7 @@ O Xcode completo **não** é necessário: o projeto compila com Swift Package Ma
 ## Instalação
 
 ```bash
-git clone <url-do-repositorio> "Switch Mac"
+git clone https://github.com/oflaus/switch-mac.git "Switch Mac"
 cd "Switch Mac"
 ./build.sh
 ```
