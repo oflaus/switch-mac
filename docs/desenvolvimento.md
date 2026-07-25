@@ -56,6 +56,21 @@ Preenche a interface com dois armazenamentos, sete arquivos e uma transferência
 andamento. Serve para conferir layout sem nenhum aparelho conectado. Os dados vivem em
 `Sources/SwitchMac/DemoData.swift`.
 
+### `--probe` — investigar um aparelho específico
+
+```bash
+"build/Switch Mac.app/Contents/MacOS/SwitchMac" --probe
+```
+
+Conecta, imprime as operações que o aparelho anuncia, lista os armazenamentos, mostra a
+raiz do primeiro com handle, formato, pai e storage de cada item, e então tenta entrar na
+primeira pasta de três maneiras diferentes. Com o registro detalhado ligado, cada comando e
+cada resposta saem no `stderr`.
+
+É a ferramenta que separa "o protocolo não funciona com este aparelho" de "a interface tem
+um bug" — foi assim que se descobriu que a navegação por pasta funcionava no MTP e quebrava
+só na tabela.
+
 ## Depurar o protocolo
 
 Ligue **Registro detalhado do protocolo** em **Ajustes** e abra
@@ -87,16 +102,34 @@ Pelo código, `MTPLog.shared.verbose = true` tem o mesmo efeito.
 - **Erros voltam com mensagem acionável.** `MTPError` já produz texto em português dizendo o
   que o usuário pode fazer, e não só o código numérico.
 
-## Armadilha de layout já encontrada
+## Armadilhas de SwiftUI já encontradas
+
+Duas custaram caro. Ficam registradas para não morderem de novo.
+
+### `fixedSize` inflando a janela inteira
 
 `Text(...).fixedSize(horizontal: false, vertical: true)` dentro do painel de detalhe fez a
 janela inteira ser medida com uma altura absurda: o texto era medido em uma largura
 degenerada, quebrava em uma letra por linha e o resultado se propagava para a barra lateral,
-que ficava em branco. A correção foi trocar `fixedSize` por larguras mínimas explícitas
-(`.frame(minWidth:maxWidth:)`).
+que ficava completamente em branco. A correção foi trocar `fixedSize` por larguras mínimas
+explícitas (`.frame(minWidth:maxWidth:)`).
 
 Se algum painel aparecer em branco ou desalinhado, desconfie primeiro de `fixedSize` e de
 `Spacer` em contexto de proposta de tamanho ilimitada.
+
+### `onDrag` dentro de célula matando o clique
+
+Um `.onDrag` em uma célula da `Table` intercepta o mouse: a linha deixa de ser selecionada e
+o duplo clique não dispara o `primaryAction`. O sintoma era cruel — clicar no *nome* da
+pasta não fazia nada, mas clicar na coluna "Modificado" da mesma linha entrava na pasta
+normalmente.
+
+A correção foi mover o arrastar para a linha, com `TableRow(...).draggable(...)` e um tipo
+`Transferable` que baixa o arquivo sob demanda. A tabela passa a arbitrar clique e arrasto,
+que é o comportamento correto.
+
+**Regra:** nunca coloque gestos em conteúdo de célula de `Table`; use os modificadores de
+`TableRow`.
 
 ## Estrutura
 

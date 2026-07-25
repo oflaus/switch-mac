@@ -55,6 +55,7 @@ O aplicativo.
 | `InterfaceRelease.swift` | Detecta e encerra os serviços do macOS que reservam a interface |
 | `Support.swift` | Formatação de bytes, datas, durações e ícones de arquivo |
 | `DemoData.swift` | Dados fictícios do modo `--demo` |
+| `Probe.swift` | Sondagem do modo `--probe`, para investigar um aparelho específico |
 
 ## Decisões de projeto
 
@@ -139,6 +140,35 @@ barra e no painel de transferências.
 - **Renomear depende de `SetObjectPropValue`**; aparelhos antigos que não implementam a
   operação recebem um aviso claro em vez de falhar em silêncio.
 - **Sem retomada de transferência interrompida** — um download cancelado recomeça do zero.
-- **Nintendo Switch é somente leitura**: o console expõe MTP apenas para o álbum de
-  capturas, e o `MtpServer` dele não aceita `SendObject`. Dá para trazer capturas e vídeos
-  para o Mac, mas não para enviar arquivos ao console.
+- **Nintendo Switch com firmware de fábrica é somente leitura**: o console expõe MTP apenas
+  para o álbum de capturas. Com um *responder* homebrew como o **DBI**, porém, o acesso é
+  completo — leitura e escrita no cartão SD e nas partições NAND (veja
+  [Aparelhos verificados](#aparelhos-verificados)).
+
+## Aparelhos verificados
+
+### Nintendo Switch com DBI (`057e:201d`)
+
+Testado de ponta a ponta. O DBI se identifica como `Nintendo / Switch / 22.5.0` e expõe
+oito armazenamentos virtuais: cartão SD, NAND USER, NAND SYSTEM, jogos instalados, dois
+destinos de instalação, saves e álbum.
+
+Operações que ele anuncia em `GetDeviceInfo`:
+
+```
+0x1001 0x1002 0x1003 0x1004 0x1005 0x1007 0x1008 0x1009 0x100B 0x100C 0x100D
+0x1014 0x1015 0x1016 0x1019 0x101B 0x95C1 0x95C2 0x95C3 0x95C4 0x95C5
+0x9801 0x9802 0x9803 0x9804 0x9805 0x9808
+```
+
+Ou seja: leitura, escrita (`SendObjectInfo` + `SendObject`), remoção, renomear
+(`SetObjectPropValue`) e leitura parcial de 64 bits (`GetPartialObject64`).
+
+Particularidades observadas:
+
+- Os identificadores de objeto seguem o padrão `0xSSNNNNNN`, com o índice do armazenamento
+  no byte alto — mas o `parent` da raiz vem como o próprio ID do armazenamento, e não como
+  `0`. O app não depende desse campo para navegar, então não faz diferença.
+- Não há datas: tudo volta como época zero (31/12/1969 no fuso local).
+- `GetObjectHandles` com `storage = 0xFFFFFFFF` responde `InvalidStorageID` (`0x2008`);
+  é preciso informar o armazenamento específico, que é o que o app faz.

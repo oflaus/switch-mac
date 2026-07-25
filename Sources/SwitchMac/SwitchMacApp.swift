@@ -31,6 +31,17 @@ struct SwitchMacApp: App {
             done.wait()
             exit(0)
         }
+
+        // Modo de investigação: entra em uma pasta e mostra tudo que vai e volta.
+        if CommandLine.arguments.contains("--probe") {
+            let done = DispatchSemaphore(value: 0)
+            Task.detached {
+                await Probe.run()
+                done.signal()
+            }
+            done.wait()
+            exit(0)
+        }
     }
 
     var body: some Scene {

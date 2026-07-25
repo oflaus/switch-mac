@@ -14,6 +14,17 @@ struct BrowserView: View {
         return sorted.filter(\.isFolder) + sorted.filter { !$0.isFolder }
     }
 
+    /// Baixa sob demanda para servir um arrastar até o Finder.
+    private var downloader: @Sendable (MTPObject) async throws -> URL {
+        { @Sendable [model] object in
+            try await withCheckedThrowingContinuation { continuation in
+                Task { @MainActor in
+                    model.provideFileForDrag(object) { continuation.resume(with: $0) }
+                }
+            }
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             BreadcrumbBar()
@@ -57,7 +68,7 @@ struct BrowserView: View {
     }
 
     private var table: some View {
-        Table(rows, selection: $model.selection, sortOrder: $sortOrder) {
+        Table(of: MTPObject.self, selection: $model.selection, sortOrder: $sortOrder) {
             TableColumn("Nome", value: \.name) { object in
                 NameCell(object: object)
             }
@@ -84,6 +95,14 @@ struct BrowserView: View {
                     .lineLimit(1)
             }
             .width(min: 140, ideal: 190)
+        } rows: {
+            // O arrastar precisa ficar na linha, não dentro de uma célula: um `onDrag`
+            // em célula intercepta o mouse e a tabela deixa de selecionar e de responder
+            // ao duplo clique.
+            ForEach(rows) { object in
+                TableRow(object)
+                    .draggable(DeviceFileDrag(object: object, download: downloader))
+            }
         }
         .contextMenu(forSelectionType: MTPObject.ID.self) { ids in
             contextMenu(for: ids)
@@ -170,10 +189,9 @@ struct BrowserView: View {
     }
 }
 
-// MARK: - Célula do nome (origem do arrastar para o Finder)
+// MARK: - Célula do nome
 
 private struct NameCell: View {
-    @EnvironmentObject private var model: AppModel
     let object: MTPObject
 
     var body: some View {
@@ -186,37 +204,22 @@ private struct NameCell: View {
                 .truncationMode(.middle)
             Spacer(minLength: 0)
         }
-        .contentShape(Rectangle())
-        .onDrag { itemProvider() }
     }
+}
 
-    /// O arquivo só é lido do aparelho quando o usuário solta no Finder.
-    private func itemProvider() -> NSItemProvider {
-        let provider = NSItemProvider()
-        provider.suggestedName = object.name
-        let identifier: String = {
-            if object.isFolder { return UTType.folder.identifier }
-            if !object.fileExtension.isEmpty,
-               let type = UTType(filenameExtension: object.fileExtension) {
-                return type.identifier
-            }
-            return UTType.data.identifier
-        }()
+// MARK: - Arrastar para o Finder
 
-        provider.registerFileRepresentation(forTypeIdentifier: identifier,
-                                            fileOptions: [],
-                                            visibility: .all) { completion in
-            Task { @MainActor in
-                model.provideFileForDrag(object) { result in
-                    switch result {
-                    case .success(let url): completion(url, false, nil)
-                    case .failure(let error): completion(nil, false, error)
-                    }
-                }
-            }
-            return nil
+/// Carga de um arrastar da lista para o Finder. O conteúdo só é lido do aparelho
+/// quando o usuário solta o mouse — antes disso nada trafega pelo USB.
+struct DeviceFileDrag: Transferable {
+    let object: MTPObject
+    let download: @Sendable (MTPObject) async throws -> URL
+
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(exportedContentType: .data) { item in
+            SentTransferredFile(try await item.download(item.object))
         }
-        return provider
+        .suggestedFileName { $0.object.name }
     }
 }
 

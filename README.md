@@ -120,6 +120,12 @@ O guia completo está em **[docs/solucao-de-problemas.md](docs/solucao-de-proble
 
 ## Estado do projeto
 
-Funciona e está em uso. O que **foi verificado**: compilação sem avisos, detecção e
-enumeração USB reais, interface completa, liberação da interface bloqueada pelo sistema.
-As limitações conhecidas estão listadas em [Arquitetura](docs/arquitetura.md#limitações-conhecidas).
+Funciona e está em uso.
+
+Verificado com hardware real — Nintendo Switch rodando o *responder* MTP do **DBI**:
+conexão, oito armazenamentos com espaço livre correto, navegação por pastas em vários
+níveis, filtro, seleção, download de arquivo com verificação de integridade no disco, barra
+de progresso e recuperação da interface bloqueada pelo macOS.
+
+As limitações conhecidas e os detalhes do aparelho testado estão em
+[Arquitetura](docs/arquitetura.md#limitações-conhecidas).

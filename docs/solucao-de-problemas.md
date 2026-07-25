@@ -116,11 +116,23 @@ Códigos que aparecem com mais frequência:
 | `0x2019` | Aparelho ocupado; tente de novo |
 | `0xA809` | Arquivo grande demais para o sistema de arquivos do destino (FAT32 tem limite de 4 GiB) |
 
-## Não consigo enviar arquivos para o Nintendo Switch
+## Nintendo Switch
 
-O console expõe MTP apenas para o álbum de capturas, e o servidor dele não implementa
-`SendObject`. Dá para trazer capturas de tela e vídeos para o Mac, mas o console não aceita
-receber arquivos por essa via — é uma limitação do próprio Nintendo Switch.
+O app funciona com o Switch, mas o que dá para fazer depende de quem responde no console:
+
+- **Firmware de fábrica**: o console expõe MTP apenas para o álbum de capturas e é somente
+  leitura. Dá para trazer capturas de tela e vídeos para o Mac, mas não enviar arquivos.
+- **Responder homebrew (DBI e semelhantes)**: acesso completo de leitura e escrita, com
+  vários armazenamentos virtuais — cartão SD, NAND USER, NAND SYSTEM, jogos instalados,
+  saves e álbum. Verificado nesta combinação.
+
+Duas coisas que chamam a atenção e **não são defeito do app**:
+
+- **Todas as datas aparecem como 31/12/1969** — o DBI não informa data de modificação, e a
+  época zero do Unix no fuso do Brasil cai nesse dia.
+- **Arquivos `._alguma-coisa` de 4 KB** espalhados pelo cartão são metadados que o próprio
+  macOS cria ao gravar em sistemas de arquivos que não têm atributos estendidos. Podem ser
+  apagados sem risco.
 
 ## O app não abre depois de copiado para outro Mac
 
