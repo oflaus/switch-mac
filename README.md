@@ -26,6 +26,27 @@ Transfer.
 └────────────────────────────────────────────────────────────────────┘
 ```
 
+## In English
+
+**Switch Mac** is a native macOS app that connects your **Nintendo Switch** to your Mac
+over USB and lets you browse its storage — SD card, NAND, installed games and saves. The
+MTP protocol is implemented from scratch in Swift; no Android File Transfer, no Java, no
+background daemon.
+
+With a homebrew MTP responder such as **DBI** running on the console, access is full
+read/write across all eight storages it exposes. On stock firmware the Switch only exposes
+the screenshot album, read-only. **Android** devices work too.
+
+- **Download:** [latest release](https://github.com/oflaus/switch-mac/releases/latest) —
+  signed and notarized by Apple, so it opens with a double click, no security warnings.
+- **Requirements:** macOS 14 or later · Apple Silicon or Intel (universal binary) · a USB
+  **data** cable (charge-only cables will not work).
+- **Not connecting?** The usual culprit is macOS itself holding the USB interface. Use
+  **Device → Release USB interface** in the app.
+
+The rest of this README, the documentation and the code comments are in Portuguese. Feel
+free to open an issue in English — it will be answered.
+
 ## Recursos
 
 - **Detecção automática.** Basta conectar o cabo e ativar o MTP no aparelho; o app conecta
