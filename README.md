@@ -1,31 +1,35 @@
 # Switch Mac
 
-Aplicativo nativo para macOS que conecta um aparelho Android ao Mac por USB e deixa você
-navegar pelo armazenamento dele — no espírito do Android File Transfer, mas escrito em
-SwiftUI, com o protocolo MTP implementado do zero e sem depender do app descontinuado da
-Google.
+Aplicativo nativo para macOS que conecta o **Nintendo Switch** ao Mac por USB e deixa você
+navegar pelo armazenamento dele — cartão SD, NAND, jogos instalados e saves. Escrito em
+SwiftUI, com o protocolo MTP implementado do zero.
+
+Com um *responder* homebrew como o **DBI** rodando no console, o acesso é completo, de
+leitura e escrita. Também funciona com aparelhos Android, no espírito do Android File
+Transfer.
 
 ```
 ┌──────────────────┬────────────────────────────────────────────────┐
-│ Galaxy S24       │ ⌂ Armazenamento interno › DCIM › Camera         │
-│ Samsung SM-S921B │────────────────────────────────────────────────│
+│ Switch           │ ⌂ Cartão SD › switch › dbi                      │
+│ Nintendo 22.5.0  │────────────────────────────────────────────────│
 │                  │ Nome                  Tamanho  Tipo   Modificado│
-│ ARMAZENAMENTO    │ 📁 Camera                   —  Pasta  24/07     │
-│ ▸ Interno        │ 🖼 IMG_20260714.jpg     4,8 MB  JPEG   24/07     │
-│   ████████░░ 42G │ 🎬 viagem-praia.mp4    1,93 GB  MPEG-4 24/07     │
-│ ▸ Cartão SD      │                                                 │
+│ ARMAZENAMENTO    │ 📁 saves                    —  Pasta  31/12     │
+│ ▸ Cartão SD      │ 📦 jogo-exemplo.nsp   12,4 GB  NSP    31/12     │
+│   ████████░░ 42G │ 📦 atualizacao.nsp     1,93 GB NSP    31/12     │
+│ ▸ NAND USER      │ 🖼 album-captura.jpg   1,2 MB  JPEG   31/12     │
 │   █████████▌ 3G  │                                                 │
+│ ▸ Jogos, saves…  │                                                 │
 ├──────────────────┴────────────────────────────────────────────────┤
-│ ↓ Baixando viagem-praia.mp4                                  62% ⓧ │
+│ ↑ Enviando jogo-exemplo.nsp                                  62% ⓧ │
 │   ██████████████████░░░░░░░░░░                                     │
-│   1,2 GB de 1,93 GB · 25,6 MB/s · decorrido 00:47 · 28 s restantes │
+│   7,7 GB de 12,4 GB · 25,6 MB/s · decorrido 00:47 · 3 min restantes│
 └────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Recursos
 
-- **Detecção automática.** Basta conectar o cabo e escolher "Transferência de arquivos" no
-  celular; o app conecta sozinho em até dois segundos.
+- **Detecção automática.** Basta conectar o cabo e ativar o MTP no aparelho; o app conecta
+  sozinho em até dois segundos.
 - **Armazenamento interno e cartão SD**, cada um com espaço usado e livre.
 - **Navegação completa**: lista ordenável por nome, tamanho, tipo e data; trilha de
   navegação clicável; voltar, avançar e pasta acima; filtro por nome.
@@ -143,9 +147,10 @@ gastar uma compilação inteira para falhar no fim.
 ## Como usar
 
 1. Conecte o aparelho com um cabo USB **de dados** — cabo só de carga não funciona.
-2. Desbloqueie a tela do celular.
-3. Puxe a barra de notificações, toque em "Carregando este dispositivo via USB" e escolha
-   **Transferência de arquivos** (ou **MTP**).
+2. **No Switch**: abra o DBI e escolha a opção de MTP (*Run MTP responder*). Sem homebrew,
+   o console expõe só o álbum de capturas, em modo somente leitura.
+3. **No Android**: desbloqueie a tela, puxe a barra de notificações, toque em "Carregando
+   este dispositivo via USB" e escolha **Transferência de arquivos** (ou **MTP**).
 
 Para enviar arquivos, arraste do Finder para a janela. Para trazer arquivos, arraste da
 janela para o Finder, ou selecione e use **Baixar**.
