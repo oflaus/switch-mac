@@ -61,7 +61,7 @@ case "$CACHE_BASE" in
 esac
 LIBUSB_PREFIX="$CACHE_BASE/libusb-$LIBUSB_VERSION-universal"
 
-if [ ! -f "$LIBUSB_PREFIX/lib/libusb-1.0.0.dylib" ]; then
+if [ ! -f "$LIBUSB_PREFIX/lib/libusb-1.0.0.dylib" ] || [ ! -f "$LIBUSB_PREFIX/COPYING" ]; then
     echo "==> compilando libusb $LIBUSB_VERSION (alvo macOS $DEPLOYMENT_TARGET)"
     echo "    cache: $LIBUSB_PREFIX"
     mkdir -p "$CACHE_BASE"
@@ -134,6 +134,9 @@ if [ ! -f "$LIBUSB_PREFIX/lib/libusb-1.0.0.dylib" ]; then
     # shellcheck disable=SC2086
     lipo -create $LIPO_INPUTS -output "$LIBUSB_PREFIX/lib/libusb-1.0.0.dylib"
 
+    # A libusb é LGPL-2.1: o texto da licença precisa acompanhar o app.
+    cp "$WORK/libusb-$LIBUSB_VERSION/COPYING" "$LIBUSB_PREFIX/COPYING"
+
     echo "    libusb pronta: $(lipo -archs "$LIBUSB_PREFIX/lib/libusb-1.0.0.dylib")"
 
     rm -rf "$WORK"
@@ -184,6 +187,10 @@ if [ -f "$DYLIB_SRC" ]; then
     cp "$DYLIB_SRC" "$DYLIB"
     chmod u+w "$DYLIB"
     install_name_tool -id "@executable_path/../Frameworks/libusb-1.0.0.dylib" "$DYLIB"
+
+    # A LGPL exige que a licença acompanhe o binário distribuído.
+    cp "$LIBUSB_PREFIX/COPYING" "$BUNDLE/Contents/Resources/libusb-COPYING.txt"
+    [ -f "$ROOT/LICENSE" ] && cp "$ROOT/LICENSE" "$BUNDLE/Contents/Resources/LICENSE.txt"
 
     # Reescreve todas as referências à libusb do Homebrew no binário.
     otool -L "$BUNDLE/Contents/MacOS/SwitchMac" \
