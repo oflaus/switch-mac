@@ -2,3 +2,7 @@
 build/
 .DS_Store
 *.xcuserstate
+
+# Arquivos AppleDouble: o macOS os cria para guardar atributos estendidos em
+# volumes que não os suportam, como o exFAT. São lixo local, nunca do projeto.
+._*

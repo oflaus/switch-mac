@@ -48,8 +48,9 @@ Google.
 | Item | Versão |
 | --- | --- |
 | macOS | 14 ou mais recente |
+| Processador | Apple Silicon ou Intel (o app é universal) |
 | Command Line Tools | `xcode-select --install` |
-| Homebrew | para instalar a `libusb` (o script faz isso) |
+| Conexão à internet | só na primeira compilação, para baixar a `libusb` |
 
 O Xcode completo **não** é necessário: o projeto compila com Swift Package Manager e o
 ícone é gerado por um script próprio.
@@ -62,8 +63,19 @@ cd "Switch Mac"
 ./build.sh
 ```
 
-O script instala a `libusb` se faltar, compila em modo release, monta o pacote, gera o
-ícone, embute a `libusb` dentro do `.app` e assina de forma ad-hoc.
+O script compila a `libusb` do fonte na primeira vez (uns 40 segundos, com o resultado
+guardado em cache), compila o app em modo release, monta o pacote, gera o ícone, embute a
+`libusb` dentro do `.app` e assina.
+
+O app é **universal**: uma única build roda nativa em Apple Silicon e em Macs Intel. A
+`libusb` embutida é compilada para as duas arquiteturas e unida com `lipo`, e o `build.sh`
+recusa gerar o pacote se as arquiteturas do app e da biblioteca não baterem.
+
+O Homebrew **não** é necessário. A `libusb` é compilada aqui de propósito: a versão que o
+Homebrew distribui é feita para o macOS mais recente e exigiria macOS 26, o que quebraria
+o app para quem está em versões anteriores. Compilando, o alvo fica em macOS 14 — e o
+`build.sh` confere isso a cada build, recusando gerar um pacote cujas versões mínimas não
+batam.
 
 O resultado é `build/Switch Mac.app`:
 
@@ -73,9 +85,60 @@ open "build/Switch Mac.app"
 
 Para instalar de vez, arraste esse `.app` para a pasta **Aplicativos**.
 
-Como a `libusb` viaja dentro do pacote, o `.app` funciona em outro Mac mesmo sem Homebrew.
-A assinatura ad-hoc basta para rodar na sua máquina; distribuir para terceiros exigiria um
-certificado Developer ID e notarização.
+Como a `libusb` viaja dentro do pacote, o `.app` funciona em qualquer Mac com macOS 14 ou
+mais recente, sem instalar nada.
+
+## Distribuição
+
+Quem baixa um app da internet passa pelo Gatekeeper. Para que o download abra com um
+duplo clique, sem aviso nenhum, o pacote precisa ser assinado com um certificado
+**Developer ID Application** e notarizado pela Apple.
+
+O `build.sh` detecta esse certificado sozinho: se ele estiver no Chaveiro, assina com ele
+e ativa o hardened runtime; se não, cai numa assinatura ad-hoc, que só serve para rodar na
+máquina onde o app foi compilado.
+
+Para gerar o `.dmg` publicável:
+
+```bash
+./release.sh
+```
+
+O script compila, assina de dentro para fora (a `libusb` antes do bundle), monta o `.dmg`,
+envia para a notarização, aguarda o retorno da Apple, grampeia o ticket e mostra o veredito
+que o Gatekeeper vai dar. O arquivo final vai para `build/` e é o que se anexa numa
+[Release](https://github.com/oflaus/switch-mac/releases).
+
+Antes do primeiro uso, duas coisas precisam existir — uma vez só:
+
+1. **O certificado Developer ID Application**, criado em
+   [developer.apple.com](https://developer.apple.com/account/resources/certificates) ou pelo
+   Xcode em *Settings → Accounts → Manage Certificates → +*. Exige o Apple Developer Program
+   pago; o certificado *Apple Development*, que vem com qualquer Apple ID, **não** serve para
+   distribuir.
+
+2. **A credencial do `notarytool`** guardada no Chaveiro. Com uma chave da App Store
+   Connect API (`AuthKey_XXXXXXXXXX.p8`):
+
+   ```bash
+   xcrun notarytool store-credentials "switchmac" --key "/caminho/AuthKey_XXXXXXXXXX.p8" --key-id "XXXXXXXXXX" --issuer "<uuid-do-issuer>"
+   ```
+
+   O `key-id` é o trecho do nome do arquivo; o `issuer` é um UUID que fica em App Store
+   Connect → Usuários e Acesso → Integrações → App Store Connect API. Como alternativa,
+   dá para usar Apple ID e uma senha de app gerada em
+   [account.apple.com](https://account.apple.com) → Segurança → Senhas específicas do app:
+
+   ```bash
+   xcrun notarytool store-credentials "switchmac" --apple-id "seu@email.com" --team-id "SEUTEAMID" --password "senha-de-app"
+   ```
+
+   Nos dois casos a credencial passa a viver no Chaveiro, e o `.p8` não precisa mais ficar
+   acessível no disco. O time do certificado do passo 1 e o time desta credencial precisam
+   ser o mesmo — assinar com um time e notarizar com outro faz a Apple recusar o envio.
+
+Sem esses dois itens o `release.sh` para logo no começo e explica o que falta, em vez de
+gastar uma compilação inteira para falhar no fim.
 
 ## Como usar
 

@@ -4,8 +4,10 @@
 
 ```bash
 xcode-select --install     # Command Line Tools (o Xcode completo não é necessário)
-brew install libusb        # o build.sh faz isso sozinho se faltar
 ```
+
+Só isso. A `libusb` é baixada e compilada pelo `build.sh` na primeira execução, e não vem
+do Homebrew — veja o porquê em [O que o `build.sh` faz](#o-que-o-buildsh-faz).
 
 ## Compilar
 
@@ -17,23 +19,44 @@ brew install libusb        # o build.sh faz isso sozinho se faltar
 Para iterar rápido, sem montar o pacote:
 
 ```bash
-export PKG_CONFIG_PATH="$(brew --prefix)/lib/pkgconfig:$PKG_CONFIG_PATH"
+export PKG_CONFIG_PATH="$HOME/Library/Caches/switch-mac/libusb-1.0.30-universal/lib/pkgconfig:$PKG_CONFIG_PATH"
 swift build                       # tudo
 swift build --target MTPKit       # só a biblioteca do protocolo
 ```
 
-O `PKG_CONFIG_PATH` é necessário porque o SwiftPM não procura em `/opt/homebrew` por
-padrão. O `build.sh` exporta essa variável por conta própria.
+O `PKG_CONFIG_PATH` é necessário porque o SwiftPM não sabe onde a `libusb` foi parar. O
+`build.sh` exporta essa variável por conta própria; rode-o ao menos uma vez antes, para
+que a `libusb` exista no cache.
 
 ## O que o `build.sh` faz
 
-1. Instala a `libusb` se faltar.
-2. Compila com o Swift Package Manager.
-3. Monta `build/Switch Mac.app` com `Info.plist` e `PkgInfo`.
+1. Baixa a `libusb`, confere o SHA-256 e a compila para `arm64` e `x86_64` com alvo
+   macOS 14, unindo as duas com `lipo` e guardando o resultado em
+   `~/Library/Caches/switch-mac/`.
+
+   Cada arquitetura é compilada numa passada separada porque o `configure` roda testes
+   que compilam e executam programas, e esses testes não funcionam com um binário de duas
+   arquiteturas.
+
+   Ela não vem do Homebrew porque os binários de lá são compilados para o macOS mais
+   recente: a `libusb` do Homebrew hoje exige macOS 26, e como a dylib viaja dentro do
+   `.app`, isso quebraria o app em todas as versões anteriores. O cache também mora fora
+   do repositório de propósito — o `libtool` não põe aspas nos caminhos ao instalar, e o
+   espaço em "Switch Mac" faria o `make install` falhar.
+
+2. Compila com o Swift Package Manager, universal (`--arch arm64 --arch x86_64`).
+3. Monta o `.app` com `Info.plist` e `PkgInfo` — num diretório temporário em APFS, porque
+   em exFAT os arquivos `._*` fazem o `codesign` recusar o pacote.
 4. Gera o ícone com `Tools/GenerateIcon.swift` e converte com `iconutil`.
 5. Copia a `libusb` para `Contents/Frameworks` e reescreve os caminhos de carregamento com
    `install_name_tool`, deixando o pacote autocontido.
-6. Assina de forma ad-hoc.
+6. Confere que app, `libusb` e `Info.plist` concordam sobre a versão mínima de macOS e
+   que app e `libusb` têm as mesmas arquiteturas, recusando continuar se divergirem.
+7. Assina: com o certificado Developer ID, se houver um; senão, de forma ad-hoc.
+8. Copia o resultado para `build/Switch Mac.app`.
+
+Para gerar o `.dmg` assinado e notarizado que vai para o GitHub, use `./release.sh` —
+veja [Distribuição](../README.md#distribuição) no README.
 
 ## Modos de linha de comando
 

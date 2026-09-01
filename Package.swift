@@ -3,7 +3,8 @@ import PackageDescription
 
 let package = Package(
     name: "SwitchMac",
-    // A libusb do Homebrew é compilada com mínimo de macOS 14.
+    // Precisa bater com DEPLOYMENT_TARGET no build.sh e com o
+    // LSMinimumSystemVersion no Info.plist — o build.sh confere isso.
     platforms: [.macOS(.v14)],
     products: [
         .executable(name: "SwitchMac", targets: ["SwitchMac"])
