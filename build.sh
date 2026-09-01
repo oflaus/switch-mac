@@ -191,6 +191,7 @@ if [ -f "$DYLIB_SRC" ]; then
     # A LGPL exige que a licença acompanhe o binário distribuído.
     cp "$LIBUSB_PREFIX/COPYING" "$BUNDLE/Contents/Resources/libusb-COPYING.txt"
     [ -f "$ROOT/LICENSE" ] && cp "$ROOT/LICENSE" "$BUNDLE/Contents/Resources/LICENSE.txt"
+    [ -f "$ROOT/NOTICE" ] && cp "$ROOT/NOTICE" "$BUNDLE/Contents/Resources/NOTICE.txt"
 
     # Reescreve todas as referências à libusb do Homebrew no binário.
     otool -L "$BUNDLE/Contents/MacOS/SwitchMac" \

@@ -19,12 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Este aplicativo embute a biblioteca libusb, distribuída sob a GNU Lesser
-General Public License, versão 2.1 ou posterior. A libusb é carregada como
-biblioteca dinâmica separada, em Contents/Frameworks, e pode ser substituída
-por outra versão compatível. O texto completo da licença dela acompanha o
-aplicativo em Contents/Resources/libusb-COPYING.txt, e o código-fonte está em
-https://github.com/libusb/libusb

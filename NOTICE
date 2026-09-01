@@ -1,0 +1,18 @@
+Switch Mac inclui software de terceiros.
+
+--------------------------------------------------------------------------
+libusb — https://github.com/libusb/libusb
+GNU Lesser General Public License, versão 2.1 ou posterior
+--------------------------------------------------------------------------
+
+O aplicativo distribuído embute a libusb em Contents/Frameworks, como
+biblioteca dinâmica separada do executável. Ela pode ser substituída por
+qualquer versão compatível sem recompilar o aplicativo, conforme a seção 6
+da LGPL-2.1.
+
+O texto completo da licença acompanha o aplicativo em
+Contents/Resources/libusb-COPYING.txt, e também está em
+https://github.com/libusb/libusb/blob/master/COPYING
+
+O código-fonte da libusb usada é a versão 1.0.30, baixada de
+https://github.com/libusb/libusb/releases/tag/v1.0.30
